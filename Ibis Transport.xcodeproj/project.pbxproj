@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F6CF8D392C5C9754000E4DE0 /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = F6CF8D382C5C9754000E4DE0 /* Alamofire */; };
 		F6E4558C2C5906A000C08185 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = F6E4558B2C5906A000C08185 /* SwiftProtobuf */; };
 		F6E4558E2C5906A000C08185 /* SwiftProtobufPluginLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = F6E4558D2C5906A000C08185 /* SwiftProtobufPluginLibrary */; };
 /* End PBXBuildFile section */
@@ -24,6 +25,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F6CF8D392C5C9754000E4DE0 /* Alamofire in Frameworks */,
 				F6E4558E2C5906A000C08185 /* SwiftProtobufPluginLibrary in Frameworks */,
 				F6E4558C2C5906A000C08185 /* SwiftProtobuf in Frameworks */,
 			);
@@ -70,6 +72,7 @@
 			packageProductDependencies = (
 				F6E4558B2C5906A000C08185 /* SwiftProtobuf */,
 				F6E4558D2C5906A000C08185 /* SwiftProtobufPluginLibrary */,
+				F6CF8D382C5C9754000E4DE0 /* Alamofire */,
 			);
 			productName = "Ibis Transport";
 			productReference = F63FF0182C57B155001BE983 /* Ibis Transport.app */;
@@ -101,6 +104,7 @@
 			mainGroup = F63FF00F2C57B155001BE983;
 			packageReferences = (
 				F6E4558A2C5906A000C08185 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+				F6CF8D372C5C9754000E4DE0 /* XCRemoteSwiftPackageReference "Alamofire" */,
 			);
 			productRefGroup = F63FF0192C57B155001BE983 /* Products */;
 			projectDirPath = "";
@@ -333,6 +337,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		F6CF8D372C5C9754000E4DE0 /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.9.1;
+			};
+		};
 		F6E4558A2C5906A000C08185 /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/apple/swift-protobuf.git";
@@ -344,6 +356,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		F6CF8D382C5C9754000E4DE0 /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F6CF8D372C5C9754000E4DE0 /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
 		F6E4558B2C5906A000C08185 /* SwiftProtobuf */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = F6E4558A2C5906A000C08185 /* XCRemoteSwiftPackageReference "swift-protobuf" */;

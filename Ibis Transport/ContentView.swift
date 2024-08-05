@@ -1,13 +1,12 @@
 import Swift
 import SwiftUI
 
-let apiKey = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJyR040V09TbmtDeTNHQ01VWlU2b0JjOG5kTlh6R2JpOHhVbjVRekstLTk0IiwiaWF0IjoxNzIxOTA0OTQ3fQ.xMcpdlIrxLPysiE8eC68Gql7PiWu0GKh2V7m7pqwAO0"
+let apiKey = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJyWDFuQkF3S1ljdll2YWNUazRHYnQtLVlKbDFTMGgtVnNjeXhNSzNJeGZrIiwiaWF0IjoxNzIyNDc5OTMxfQ.9jSZ0RbZ2k7G7Pd4GwoRLhLPHxSyg1dZerFy2bOInHo"
 
 struct ContentView: View {
-    fetchStaticTimetable {
-    }
+    let hi: () = getStaticZip()
     var body: some View {
-        Text(apiKey)
+        Text("hi")
             .padding()
     }
 }
