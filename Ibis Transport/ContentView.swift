@@ -1,13 +1,25 @@
 import Swift
 import SwiftUI
-
-let apiKey = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJyWDFuQkF3S1ljdll2YWNUazRHYnQtLVlKbDFTMGgtVnNjeXhNSzNJeGZrIiwiaWF0IjoxNzIyNDc5OTMxfQ.9jSZ0RbZ2k7G7Pd4GwoRLhLPHxSyg1dZerFy2bOInHo"
+import MapKit
 
 struct ContentView: View {
-    let hi: () = getStaticZip()
+    
+    @State var showHomeSheet = false
+    
     var body: some View {
-        Text("hi")
-            .padding()
+        ZStack {
+            Map() {
+            }
+            .mapStyle(.standard(elevation: .realistic))
+            
+            Button("Show Home Sheet") {
+                showHomeSheet.toggle()
+            }
+            .buttonStyle(.bordered)
+        }
+        .sheet(isPresented: $showHomeSheet) {
+            Text("This is le home screen!!!")
+        }
     }
 }
 
