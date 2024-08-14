@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import Alamofire
 
 @main
 struct Ibis_TransportApp: App {
