@@ -17,6 +17,23 @@ struct ContentView: View {
             }
             .onAppear {
                 locationManager.requestWhenInUseAuthorization()
+                deviceLocationService.shared.requestLocationUpdates()
+            }
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Button() {
+                        showHomeSheet.toggle()
+                    } label: {
+                        Image(systemName: "house")
+                    }
+                    .frame(alignment: .bottomTrailing)
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.roundedRectangle)
+                    .controlSize(.regular)
+                    .padding()
+                }
             }
         }
         .sheet(isPresented: $showHomeSheet) {
@@ -25,6 +42,7 @@ struct ContentView: View {
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(50)
                 .presentationBackground(.ultraThinMaterial)
+                .presentationBackgroundInteraction(.enabled)
         }
     }
 }
@@ -43,6 +61,7 @@ struct homeSheetView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .padding(30)
     }
+    
 }
 
 struct ContentView_Previews: PreviewProvider {
