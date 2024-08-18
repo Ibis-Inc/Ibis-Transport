@@ -29,7 +29,8 @@ struct ContentView: View {
                         Image(systemName: "house")
                     }
                     .frame(alignment: .bottomTrailing)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.bordered)
+                    .background(Color.white)
                     .buttonBorderShape(.roundedRectangle)
                     .controlSize(.regular)
                     .padding()
