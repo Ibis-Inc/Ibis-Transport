@@ -10,14 +10,20 @@ import Combine
 import CoreLocation
 import Alamofire
 import SwiftData
-import MapKit
 
 @Model
-class stationData {
+final class stationData {
     var id: String
-    var name: String
-    var coord: CLLocationCoordinate2D
-    var type: String
+    @Published var name: String
+    @Published var coord: CLLocationCoordinate2D
+    @Published var type: String
+    
+    init(id: String, name: String, coord: CLLocationCoordinate2D, type: String) {
+        self.id = id
+        self.name = name
+        self.coord = coord
+        self.type = type
+    }
     
 }
 
@@ -43,7 +49,8 @@ class stationService {
             .store(in: &cancellables)
     }
     
-    private func fetchNearbyTrainStations(latitude: Double, longitude: Double) {
+    public func fetchNearbyTrainStations(latitude: Double, longitude: Double) {
+        subscribeToLocationUpdates()
         let api = "https://api.transport.nsw.gov.au/v1/tp/coord?outputFormat=rapidJSON&coord="
         let endString = "%3AEPSG%3A4326&coordOutputFormat=EPSG%3A4326&inclFilter=1&type_1=POI_POINT&radius_1=1000&PoisOnMapMacro=true&version=10.2.1.42"
         let latitudeString = String(format: "%.6f", latitude)
@@ -62,14 +69,18 @@ class stationService {
             switch response.result {
             case .success(let value):
                 guard let json = value as? [String: Any],
-                      let locations = json["locations"] as? [[String: Any]] else {
+                      let locations = json["locations"] as? [[String: Any]]
+                else {
                     print("Invalid JSON Thing")
                     return
                 }
+                print("Locations: \(locations)")
             case .failure(let error):
                 print("Error \(error)")
             }
         }
+        
+        
     }
     
     private func saveStationData(locations: [[String: Any]]) {
