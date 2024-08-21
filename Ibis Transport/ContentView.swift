@@ -1,8 +1,13 @@
 import Swift
 import SwiftUI
 import MapKit
+import SwiftData
 
 struct ContentView: View {
+    
+    @Environment(\.modelContext) private var context
+    
+    @ObservedObject var trainService = stationService()
     let locationManager = CLLocationManager()
     @State var showHomeSheet = true
     @State private var cameraLocation: MapCameraPosition = .userLocation(fallback: .automatic)
@@ -27,6 +32,17 @@ struct ContentView: View {
                         showHomeSheet.toggle()
                     } label: {
                         Image(systemName: "house")
+                    }
+                    .frame(alignment: .bottomTrailing)
+                    .buttonStyle(.bordered)
+                    .background(Color.white)
+                    .buttonBorderShape(.roundedRectangle)
+                    .controlSize(.regular)
+                    .padding()
+                    Button() {
+                        trainService.fetchNearbyTrainStations()
+                    } label: {
+                        Image(systemName: "pencil")
                     }
                     .frame(alignment: .bottomTrailing)
                     .buttonStyle(.bordered)

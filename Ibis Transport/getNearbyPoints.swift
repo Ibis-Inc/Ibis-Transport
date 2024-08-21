@@ -13,28 +13,32 @@ import SwiftData
 
 @Model
 final class stationData {
-    var id: String
-    @Published var name: String
-    @Published var coord: CLLocationCoordinate2D
-    @Published var type: String
+    var stopID: String
+    var stopName: String
+    var stopType: String
+    var stopCoord: CLLocationCoordinate2D
     
-    init(id: String, name: String, coord: CLLocationCoordinate2D, type: String) {
-        self.id = id
-        self.name = name
-        self.coord = coord
-        self.type = type
+    init(stopID: String, stopName: String, stopType: String, stopCoord: CLLocationCoordinate2D) {
+        self.stopID = stopID
+        self.stopName = stopName
+        self.stopType = stopType
+        self.stopCoord = stopCoord
     }
-    
 }
 
-class stationService {
+public class stationService: ObservableObject {
+    @Published var locations: [[String: Any]] = []
+    
+    private var longitude: Double?
+    private var latitiude: Double?
+    
     private var cancellables = Set<AnyCancellable>()
     
     init() {
         subscribeToLocationUpdates()
     }
     
-    private func subscribeToLocationUpdates() {
+    public func subscribeToLocationUpdates() {
         deviceLocationService.shared.coordinatesPublisher
             .sink(receiveCompletion: { completion in
                 switch completion {
@@ -44,18 +48,24 @@ class stationService {
                     break
                 }
             }, receiveValue: { [weak self] coordinate in
-                self?.fetchNearbyTrainStations(latitude: coordinate.latitude, longitude: coordinate.longitude)
+                self?.longitude = coordinate.longitude
+                self?.latitiude = coordinate.latitude
             })
             .store(in: &cancellables)
     }
     
-    public func fetchNearbyTrainStations(latitude: Double, longitude: Double) {
-        subscribeToLocationUpdates()
+    public func fetchNearbyTrainStations() {
+        guard let latitude = self.latitiude, let longitude = self.longitude else {
+            print("No coordinates available!!!")
+            return
+        }
+        
         let api = "https://api.transport.nsw.gov.au/v1/tp/coord?outputFormat=rapidJSON&coord="
-        let endString = "%3AEPSG%3A4326&coordOutputFormat=EPSG%3A4326&inclFilter=1&type_1=POI_POINT&radius_1=1000&PoisOnMapMacro=true&version=10.2.1.42"
+        let endString = "%3AEPSG%3A4326&coordOutputFormat=EPSG%3A4326&inclFilter=1&type_1=BUS_POINT&radius_1=1000&PoisOnMapMacro=true&version=10.2.1.42"
+        let percentThing = "%3A"
         let latitudeString = String(format: "%.6f", latitude)
         let longitudeString = String(format: "%.6f", longitude)
-        let urlString = api + longitudeString + "%38" + latitudeString + endString
+        let urlString = api + longitudeString + percentThing + latitudeString + endString
         let headers: HTTPHeaders = [
             "accept": "application/json",
             "Authorization": "apikey \(apiKey)"
@@ -65,25 +75,24 @@ class stationService {
             return
         }
         
-        AF.request(url, headers: headers).responseJSON { response in
+        AF.request(url, headers: headers).responseJSON { [ weak self ] response in guard let self = self else { return }
             switch response.result {
             case .success(let value):
                 guard let json = value as? [String: Any],
                       let locations = json["locations"] as? [[String: Any]]
+
                 else {
-                    print("Invalid JSON Thing")
+                    print("Invalid JSON Thing: \(value)")
                     return
                 }
                 print("Locations: \(locations)")
             case .failure(let error):
                 print("Error \(error)")
             }
+            print(self.locations)
+            print(urlString)
         }
         
-        
-    }
-    
-    private func saveStationData(locations: [[String: Any]]) {
         
     }
 }

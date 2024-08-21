@@ -28,6 +28,6 @@ struct Ibis_TransportApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(sharedModelContainer)
+        .modelContainer(for: stationData.self)
     }
 }

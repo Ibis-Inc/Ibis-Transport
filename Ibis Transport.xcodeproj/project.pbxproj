@@ -263,6 +263,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Ibis Transport/Preview Content\"";
+				DEVELOPMENT_TEAM = WQWRM49BZZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Ibis-Transport-Info.plist";
@@ -294,6 +295,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Ibis Transport/Preview Content\"";
+				DEVELOPMENT_TEAM = WQWRM49BZZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Ibis-Transport-Info.plist";
