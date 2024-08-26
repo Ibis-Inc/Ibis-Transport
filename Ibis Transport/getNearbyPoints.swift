@@ -11,13 +11,22 @@ import CoreLocation
 import Alamofire
 import SwiftData
 
-
-
+@Model
 final class stationData: Decodable {
+    struct Coordinate2D: Codable {
+        let latitude: Double
+            let longitude: Double
+
+            init(latitude: Double, longitude: Double) {
+                self.latitude = latitude
+                self.longitude = longitude
+            }
+    }
+    
     var stopID: String
     var stopName: String
     var stopType: String
-    var stopCoord: CLLocationCoordinate2D
+    var stopCoord: Coordinate2D
     
     enum CodingKeys: String, CodingKey {
             case stopID = "stop_id"
@@ -26,7 +35,7 @@ final class stationData: Decodable {
             case stopCoord = "stop_coord"
         }
     
-    init(stopID: String, stopName: String, stopType: String, stopCoord: CLLocationCoordinate2D) {
+    init(stopID: String, stopName: String, stopType: String, stopCoord: Coordinate2D) {
         self.stopID = stopID
         self.stopName = stopName
         self.stopType = stopType
@@ -39,10 +48,8 @@ final class stationData: Decodable {
             stopName = try container.decode(String.self, forKey: .stopName)
             stopType = try container.decode(String.self, forKey: .stopType)
             
-            let coordContainer = try container.nestedContainer(keyedBy: CodingKeys.self, forKey: .stopCoord)
-            let latitude = try coordContainer.decode(CLLocationDegrees.self, forKey: .latitude)
-            let longitude = try coordContainer.decode(CLLocationDegrees.self, forKey: .longitude)
-            stopCoord = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        _ = try container.nestedContainer(keyedBy: CodingKeys.self, forKey: .stopCoord)
+        stopCoord = try container.decode(Coordinate2D.self, forKey: .stopCoord)
         }
 }
 
@@ -95,16 +102,18 @@ public class stationService: ObservableObject {
             return
         }
         
-        AF.request(url, headers: headers).responseDecodable(of: stationData.self) { [self] response in
+        AF.request(url, headers: headers).responseDecodable(of: [stationData].self) { [self] response in
             switch response.result {
-            case .success(let value):
-                guard let json = value as? [String: Any],
-                      let locations = json["locations"] as? [[String: Any]]
-
-                else {
-                    print("Invalid JSON Thing: \(value)")
-                    return
-                }
+            case .success(let stations):
+                let locations = stations.map { station -> [String: Any] in
+                                return [
+                                    "id": station.id,
+                                    "name": station.stopName,
+                                    "type": station.stopType,
+                                    "latitude": station.stopCoord.latitude,
+                                    "longitude": station.stopCoord.longitude
+                                ]
+                            }
                 print("Locations: \(locations)")
                 completion(locations)
             case .failure(let error):
@@ -117,4 +126,30 @@ public class stationService: ObservableObject {
         
         
     }
+    
+    public func saveStationsToModel() {
+            fetchNearbyTrainStations { [weak self] locations in
+                guard let self = self, let locations = locations else { return }
+                
+                for location in locations {
+                    if let stopID = location["stopID"] as? String,
+                       let stopName = location["stopName"] as? String,
+                       let stopType = location["stopType"] as? String,
+                       let stopCoordDict = location["stopCoord"] as? [String: Double],
+                       let latitude = stopCoordDict["latitude"],
+                       let longitude = stopCoordDict["longitude"] {
+                        
+                        let stopCoord = stationData.Coordinate2D(latitude: latitude, longitude: longitude)
+                        let station = stationData(stopID: stopID, stopName: stopName, stopType: stopType, stopCoord: stopCoord)
+                        
+                        // Save to SwiftData model
+                        do {
+                            try SwiftData.save(station)
+                        } catch {
+                            print("Failed to save station: \(error)")
+                        }
+                    }
+                }
+            }
+        }
 }
