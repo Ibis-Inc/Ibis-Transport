@@ -11,12 +11,20 @@ import CoreLocation
 import Alamofire
 import SwiftData
 
-@Model
-final class stationData {
+
+
+final class stationData: Decodable {
     var stopID: String
     var stopName: String
     var stopType: String
     var stopCoord: CLLocationCoordinate2D
+    
+    enum CodingKeys: String, CodingKey {
+            case stopID = "stop_id"
+            case stopName = "stop_name"
+            case stopType = "stop_type"
+            case stopCoord = "stop_coord"
+        }
     
     init(stopID: String, stopName: String, stopType: String, stopCoord: CLLocationCoordinate2D) {
         self.stopID = stopID
@@ -24,6 +32,18 @@ final class stationData {
         self.stopType = stopType
         self.stopCoord = stopCoord
     }
+    
+    required init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            stopID = try container.decode(String.self, forKey: .stopID)
+            stopName = try container.decode(String.self, forKey: .stopName)
+            stopType = try container.decode(String.self, forKey: .stopType)
+            
+            let coordContainer = try container.nestedContainer(keyedBy: CodingKeys.self, forKey: .stopCoord)
+            let latitude = try coordContainer.decode(CLLocationDegrees.self, forKey: .latitude)
+            let longitude = try coordContainer.decode(CLLocationDegrees.self, forKey: .longitude)
+            stopCoord = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        }
 }
 
 public class stationService: ObservableObject {
@@ -54,7 +74,7 @@ public class stationService: ObservableObject {
             .store(in: &cancellables)
     }
     
-    public func fetchNearbyTrainStations() {
+    public func fetchNearbyTrainStations(completion: @escaping (([[String: Any]])?) -> Void) {
         guard let latitude = self.latitiude, let longitude = self.longitude else {
             print("No coordinates available!!!")
             return
@@ -75,7 +95,7 @@ public class stationService: ObservableObject {
             return
         }
         
-        AF.request(url, headers: headers).responseJSON { [ weak self ] response in guard let self = self else { return }
+        AF.request(url, headers: headers).responseDecodable(of: stationData.self) { [self] response in
             switch response.result {
             case .success(let value):
                 guard let json = value as? [String: Any],
@@ -86,8 +106,10 @@ public class stationService: ObservableObject {
                     return
                 }
                 print("Locations: \(locations)")
+                completion(locations)
             case .failure(let error):
                 print("Error \(error)")
+                completion(nil)
             }
             print(self.locations)
             print(urlString)

@@ -40,7 +40,7 @@ struct ContentView: View {
                     .controlSize(.regular)
                     .padding()
                     Button() {
-                        trainService.fetchNearbyTrainStations()
+                        trainService.fetchNearbyTrainStations(completion: <#T##(([[String : Any]])?) -> Void#>)
                     } label: {
                         Image(systemName: "pencil")
                     }
