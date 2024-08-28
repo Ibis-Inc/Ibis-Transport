@@ -4,12 +4,12 @@ import MapKit
 import SwiftData
 
 struct ContentView: View {
-    
     @Environment(\.modelContext) private var context
-    
-    @ObservedObject var trainService = stationService()
     let locationManager = CLLocationManager()
     @State var showHomeSheet = true
+    
+    
+    
     @State private var cameraLocation: MapCameraPosition = .userLocation(fallback: .automatic)
     var body: some View {
         ZStack {
@@ -83,5 +83,6 @@ struct homeSheetView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+            .modelContainer(for: stationData.self)
     }
 }
