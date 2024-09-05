@@ -13,7 +13,7 @@ import SwiftData
 import SwiftUI
 
 @Model
-final class stationData: Decodable {
+final class stationData: Decodable, CustomStringConvertible {
     struct Coordinate2D: Codable {
         let latitude: Double
         let longitude: Double
@@ -52,7 +52,13 @@ final class stationData: Decodable {
         let coord = try container.decode([Double].self, forKey: .stopCoord)
         stopCoord = Coordinate2D(latitude: coord[0], longitude: coord[1])
     }
+
+    // Custom description
+    var description: String {
+        return "Station ID: \(stopID), Name: \(stopName), Type: \(stopType), Coordinates: (\(stopCoord.latitude), \(stopCoord.longitude))"
+    }
 }
+
 
 
 public class stationService: ObservableObject {

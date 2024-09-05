@@ -28,6 +28,8 @@ struct ContentView: View {
                 // Set the model context for the stationService object after view appears
                 trainStupid.modelContext = context
                 trainStupid.subscribeToLocationUpdates()
+                trainStupid.fetchNearbyTrainStations { _ in
+                }
             }
             VStack {
                 Spacer()
@@ -46,7 +48,6 @@ struct ContentView: View {
                     .padding()
                     Button {
                         trainStupid.fetchNearbyTrainStations { _ in
-                            // Handle completion if needed
                         }
                     } label: {
                         Image(systemName: "pencil")
