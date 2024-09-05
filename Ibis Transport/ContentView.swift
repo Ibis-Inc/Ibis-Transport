@@ -1,4 +1,3 @@
-import Swift
 import SwiftUI
 import MapKit
 import SwiftData
@@ -8,9 +7,11 @@ struct ContentView: View {
     let locationManager = CLLocationManager()
     @State var showHomeSheet = true
     
-    
-    
+    // Initialize stationService lazily without passing context in init
+    @StateObject private var trainStupid = stationService()
+
     @State private var cameraLocation: MapCameraPosition = .userLocation(fallback: .automatic)
+
     var body: some View {
         ZStack {
             Map(position: $cameraLocation) {
@@ -23,12 +24,16 @@ struct ContentView: View {
             .onAppear {
                 locationManager.requestWhenInUseAuthorization()
                 deviceLocationService.shared.requestLocationUpdates()
+                
+                // Set the model context for the stationService object after view appears
+                trainStupid.modelContext = context
+                trainStupid.subscribeToLocationUpdates()
             }
             VStack {
                 Spacer()
                 HStack {
                     Spacer()
-                    Button() {
+                    Button {
                         showHomeSheet.toggle()
                     } label: {
                         Image(systemName: "house")
@@ -39,7 +44,10 @@ struct ContentView: View {
                     .buttonBorderShape(.roundedRectangle)
                     .controlSize(.regular)
                     .padding()
-                    Button() {
+                    Button {
+                        trainStupid.fetchNearbyTrainStations { _ in
+                            // Handle completion if needed
+                        }
                     } label: {
                         Image(systemName: "pencil")
                     }
@@ -65,19 +73,18 @@ struct ContentView: View {
 
 struct homeSheetView: View {
     var body: some View {
-            VStack (alignment: .leading) {
-                HStack {
-                    Text("Ibis Transport")
-                        .fontWeight(.bold)
-                        .fontWidth(.expanded)
-                        .font(.system(size: 30))
-                    MapUserLocationButton()
-                }
+        VStack(alignment: .leading) {
+            HStack {
+                Text("Ibis Transport")
+                    .fontWeight(.bold)
+                    .fontWidth(.expanded)
+                    .font(.system(size: 30))
+                MapUserLocationButton()
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .padding(30)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding(30)
     }
-    
 }
 
 struct ContentView_Previews: PreviewProvider {

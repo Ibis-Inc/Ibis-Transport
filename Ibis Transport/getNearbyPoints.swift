@@ -10,65 +10,67 @@ import Combine
 import CoreLocation
 import Alamofire
 import SwiftData
+import SwiftUI
 
 @Model
 final class stationData: Decodable {
     struct Coordinate2D: Codable {
         let latitude: Double
-            let longitude: Double
+        let longitude: Double
 
-            init(latitude: Double, longitude: Double) {
-                self.latitude = latitude
-                self.longitude = longitude
-            }
+        init(latitude: Double, longitude: Double) {
+            self.latitude = latitude
+            self.longitude = longitude
+        }
     }
-    
+
     @Attribute(.unique)
     var stopID: String
     var stopName: String
     var stopType: String
     var stopCoord: Coordinate2D
-    
+
     enum CodingKeys: String, CodingKey {
-            case stopID = "stop_id"
-            case stopName = "stop_name"
-            case stopType = "stop_type"
-            case stopCoord = "stop_coord"
-        }
-    
+        case stopID = "id"
+        case stopName = "name"
+        case stopType = "type"
+        case stopCoord = "coord"
+    }
+
     init(stopID: String, stopName: String, stopType: String, stopCoord: Coordinate2D) {
         self.stopID = stopID
         self.stopName = stopName
         self.stopType = stopType
         self.stopCoord = stopCoord
     }
-    
+
     required init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            stopID = try container.decode(String.self, forKey: .stopID)
-            stopName = try container.decode(String.self, forKey: .stopName)
-            stopType = try container.decode(String.self, forKey: .stopType)
-            
-        _ = try container.nestedContainer(keyedBy: CodingKeys.self, forKey: .stopCoord)
-        stopCoord = try container.decode(Coordinate2D.self, forKey: .stopCoord)
-        }
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        stopID = try container.decode(String.self, forKey: .stopID)
+        stopName = try container.decode(String.self, forKey: .stopName)
+        stopType = try container.decode(String.self, forKey: .stopType)
+        let coord = try container.decode([Double].self, forKey: .stopCoord)
+        stopCoord = Coordinate2D(latitude: coord[0], longitude: coord[1])
+    }
 }
+
 
 public class stationService: ObservableObject {
     @Published var locations: [[String: Any]] = []
-    
+
     private var longitude: Double?
     private var latitiude: Double?
-    
+
     private var cancellables = Set<AnyCancellable>()
-    
-    private var modelContext: ModelContext
-    
-    init(modelContext: ModelContext) {
+
+    // Make modelContext optional
+    public var modelContext: ModelContext?
+
+    init(modelContext: ModelContext? = nil) {
         self.modelContext = modelContext
         subscribeToLocationUpdates()
     }
-    
+
     public func subscribeToLocationUpdates() {
         deviceLocationService.shared.coordinatesPublisher
             .sink(receiveCompletion: { completion in
@@ -84,13 +86,14 @@ public class stationService: ObservableObject {
             })
             .store(in: &cancellables)
     }
-    
+
+    @MainActor
     public func fetchNearbyTrainStations(completion: @escaping (([[String: Any]])?) -> Void) {
         guard let latitude = self.latitiude, let longitude = self.longitude else {
             print("No coordinates available!!!")
             return
         }
-        
+
         let api = "https://api.transport.nsw.gov.au/v1/tp/coord?outputFormat=rapidJSON&coord="
         let endString = "%3AEPSG%3A4326&coordOutputFormat=EPSG%3A4326&inclFilter=1&type_1=BUS_POINT&radius_1=1000&PoisOnMapMacro=true&version=10.2.1.42"
         let percentThing = "%3A"
@@ -105,20 +108,38 @@ public class stationService: ObservableObject {
             print("invalid url!!!")
             return
         }
-        
-        AF.request(url, headers: headers).responseDecodable(of: [stationData].self) { [self] response in
+
+        AF.request(url, headers: headers).responseJSON { [weak self] response in
+            guard let self = self else { return }
+
             switch response.result {
-            case .success(let stations):
-                print("Locations: \(stations)")
-                stations.forEach { modelContext.insert($0) }
+            case .success(let json):
+                guard let jsonDict = json as? [String: Any],
+                      let locationsArray = jsonDict["locations"] as? [[String: Any]] else {
+                    print("Failed to decode JSON structure")
+                    completion(nil)
+                    return
+                }
+
+                let stationDataList = locationsArray.compactMap { dict -> stationData? in
+                    let jsonData = try? JSONSerialization.data(withJSONObject: dict, options: [])
+                    return try? JSONDecoder().decode(stationData.self, from: jsonData ?? Data())
+                }
+
+                print("Locations: \(stationDataList)")
+
+                // Safely unwrap modelContext before using it
+                if let modelContext = self.modelContext {
+                    stationDataList.forEach { modelContext.insert($0) }
+                } else {
+                    print("Model context is nil, cannot insert data")
+                }
+
             case .failure(let error):
                 print("Error \(error)")
                 completion(nil)
             }
-            print(self.locations)
-            print(urlString)
         }
-        
-        
     }
+
 }
