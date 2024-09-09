@@ -22,17 +22,13 @@ final class stationData: Decodable, CustomStringConvertible, Identifiable {
             self.latitude = latitude
             self.longitude = longitude
         }
-        
-        var clLocationCoordinate: CLLocationCoordinate2D {
-                    return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-                }
-    }
+}
 
     @Attribute(.unique)
     var stopID: String
     var stopName: String
     var stopType: String
-    var stopCoord: CLLocationCoordinate2D
+    var stopCoord: Coordinate2D
 
     enum CodingKeys: String, CodingKey {
         case stopID = "id"
@@ -41,7 +37,7 @@ final class stationData: Decodable, CustomStringConvertible, Identifiable {
         case stopCoord = "coord"
     }
 
-    init(stopID: String, stopName: String, stopType: String, stopCoord: CLLocationCoordinate2D) {
+    init(stopID: String, stopName: String, stopType: String, stopCoord: Coordinate2D) {
         self.stopID = stopID
         self.stopName = stopName
         self.stopType = stopType
@@ -54,7 +50,7 @@ final class stationData: Decodable, CustomStringConvertible, Identifiable {
         stopName = try container.decode(String.self, forKey: .stopName)
         stopType = try container.decode(String.self, forKey: .stopType)
         let coord = try container.decode([Double].self, forKey: .stopCoord)
-        stopCoord = CLLocationCoordinate2D(latitude: coord[0], longitude: coord[1])
+        stopCoord = Coordinate2D(latitude: coord[0], longitude: coord[1])
     }
 
     // Custom description
