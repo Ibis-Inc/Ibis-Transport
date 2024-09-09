@@ -9,13 +9,17 @@ struct ContentView: View {
     
     // Initialize stationService lazily without passing context in init
     @StateObject private var trainStupid = stationService()
-
+    @State private var stations: [stationData] = []
     @State private var cameraLocation: MapCameraPosition = .userLocation(fallback: .automatic)
 
     var body: some View {
         ZStack {
             Map(position: $cameraLocation) {
                 UserAnnotation()
+                
+                ForEach(stations) { station in
+                    Marker(station.stopName, coordinate: station.stopCoord)
+                }
             }
             .mapStyle(.standard(elevation: .realistic))
             .mapControls {
@@ -28,7 +32,10 @@ struct ContentView: View {
                 // Set the model context for the stationService object after view appears
                 trainStupid.modelContext = context
                 trainStupid.subscribeToLocationUpdates()
-                trainStupid.fetchNearbyTrainStations { _ in
+                trainStupid.fetchNearbyTrainStations { fetchedStations in
+                    if let fetchedStations {
+                        let stations = fetchedStations
+                    }
                 }
             }
             VStack {
@@ -47,7 +54,10 @@ struct ContentView: View {
                     .controlSize(.regular)
                     .padding()
                     Button {
-                        trainStupid.fetchNearbyTrainStations { _ in
+                        trainStupid.fetchNearbyTrainStations { fetchedStations in
+                            if let fetchedStations {
+                                let stations = fetchedStations
+                            }
                         }
                     } label: {
                         Image(systemName: "pencil")
