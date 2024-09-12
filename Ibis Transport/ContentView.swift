@@ -1,6 +1,6 @@
+import CoreLocation
 import SwiftUI
 import MapKit
-import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var context
@@ -9,13 +9,20 @@ struct ContentView: View {
     
     // Initialize stationService lazily without passing context in init
     @StateObject private var trainStupid = stationService()
-
-    @State private var cameraLocation: MapCameraPosition = .userLocation(fallback: .automatic)
-
+    @State private var stations: [stationData] = []
+    @State private var cameraLocation: MKCoordinateRegion = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: -33.866464, longitude: 151.200923),
+        span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+    )
+    
     var body: some View {
         ZStack {
-            Map(position: $cameraLocation) {
-                UserAnnotation()
+            Map(coordinateRegion: $cameraLocation, annotationItems: stations) { station in
+                MapAnnotation(coordinate: station.stopCoord.toCLLocationCoordinate2D()) {
+                    Circle()
+                        .strokeBorder(Color.blue, lineWidth: 2)
+                        .frame(width: 20, height: 20)
+                }
             }
             .mapStyle(.standard(elevation: .realistic))
             .mapControls {
@@ -28,9 +35,18 @@ struct ContentView: View {
                 // Set the model context for the stationService object after view appears
                 trainStupid.modelContext = context
                 trainStupid.subscribeToLocationUpdates()
-                trainStupid.fetchNearbyTrainStations { _ in
+                trainStupid.fetchNearbyTrainStations { fetchedStations in
+                    if let fetchedStations = fetchedStations {
+                        self.stations = fetchedStations
+                    }
+                }
+                
+                // Update camera location to user's actual location
+                if let userLocation = locationManager.location?.coordinate {
+                    cameraLocation.center = userLocation
                 }
             }
+            
             VStack {
                 Spacer()
                 HStack {
@@ -47,7 +63,11 @@ struct ContentView: View {
                     .controlSize(.regular)
                     .padding()
                     Button {
-                        trainStupid.fetchNearbyTrainStations { _ in
+                        trainStupid.fetchNearbyTrainStations { fetchedStations in
+                            if let fetchedStations = fetchedStations {
+                                self.stations = fetchedStations
+                                stations.forEach { print($0) }
+                            }
                         }
                     } label: {
                         Image(systemName: "pencil")
@@ -92,5 +112,11 @@ struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
             .modelContainer(for: stationData.self)
+    }
+}
+
+extension stationData.Coordinate2D {
+    func toCLLocationCoordinate2D() -> CLLocationCoordinate2D {
+        return CLLocationCoordinate2D(latitude: self.latitude, longitude: self.longitude)
     }
 }

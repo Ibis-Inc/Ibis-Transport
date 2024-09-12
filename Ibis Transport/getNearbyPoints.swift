@@ -13,7 +13,7 @@ import SwiftData
 import SwiftUI
 
 @Model
-final class stationData: Decodable, CustomStringConvertible {
+public final class stationData: Decodable, CustomStringConvertible, Identifiable, Hashable {
     struct Coordinate2D: Codable {
         let latitude: Double
         let longitude: Double
@@ -29,7 +29,7 @@ final class stationData: Decodable, CustomStringConvertible {
     var stopName: String
     var stopType: String
     var stopCoord: Coordinate2D
-
+    
     enum CodingKeys: String, CodingKey {
         case stopID = "id"
         case stopName = "name"
@@ -44,7 +44,7 @@ final class stationData: Decodable, CustomStringConvertible {
         self.stopCoord = stopCoord
     }
 
-    required init(from decoder: Decoder) throws {
+    required public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         stopID = try container.decode(String.self, forKey: .stopID)
         stopName = try container.decode(String.self, forKey: .stopName)
@@ -54,7 +54,7 @@ final class stationData: Decodable, CustomStringConvertible {
     }
 
     // Custom description
-    var description: String {
+    public var description: String {
         return "Station ID: \(stopID), Name: \(stopName), Type: \(stopType), Coordinates: (\(stopCoord.latitude), \(stopCoord.longitude))"
     }
 }
@@ -94,7 +94,7 @@ public class stationService: ObservableObject {
     }
 
     @MainActor
-    public func fetchNearbyTrainStations(completion: @escaping (([[String: Any]])?) -> Void) {
+    public func fetchNearbyTrainStations(completion: @escaping ([stationData]?) -> Void) {
         guard let latitude = self.latitiude, let longitude = self.longitude else {
             print("No coordinates available!!!")
             return
@@ -132,14 +132,16 @@ public class stationService: ObservableObject {
                     return try? JSONDecoder().decode(stationData.self, from: jsonData ?? Data())
                 }
 
-                print("Locations: \(stationDataList)")
-
                 // Safely unwrap modelContext before using it
                 if let modelContext = self.modelContext {
                     stationDataList.forEach { modelContext.insert($0) }
+
                 } else {
                     print("Model context is nil, cannot insert data")
                 }
+                
+                
+                completion(stationDataList)
 
             case .failure(let error):
                 print("Error \(error)")
