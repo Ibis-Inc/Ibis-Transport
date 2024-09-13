@@ -1,6 +1,6 @@
-import CoreLocation
 import SwiftUI
 import MapKit
+import CoreLocation
 
 struct ContentView: View {
     @Environment(\.modelContext) private var context
@@ -17,16 +17,24 @@ struct ContentView: View {
     
     var body: some View {
         ZStack {
-            Map(coordinateRegion: $cameraLocation, annotationItems: stations) { station in
-                MapAnnotation(coordinate: station.stopCoord.toCLLocationCoordinate2D()) {
-                    Circle()
-                        .strokeBorder(Color.blue, lineWidth: 2)
-                        .frame(width: 20, height: 20)
+            Map() {
+                ForEach(stations) { station in
+                    Marker(station.stopName, coordinate: station.stopCoord.toCLLocationCoordinate2D())
                 }
             }
             .mapStyle(.standard(elevation: .realistic))
             .mapControls {
                 MapUserLocationButton()
+                Button {
+                    trainStupid.fetchNearbyTrainStations { fetchedStations in
+                        if let fetchedStations = fetchedStations {
+                            self.stations = fetchedStations
+                            stations.forEach { print($0) }
+                        }
+                    }
+                } label: {
+                    Image(systemName: "pencil")
+                }
             }
             .onAppear {
                 locationManager.requestWhenInUseAuthorization()
@@ -94,6 +102,8 @@ struct ContentView: View {
 
 struct homeSheetView: View {
     var body: some View {
+        @StateObject var trainStupid = stationService()
+        @State var station: [stationData] = []
         VStack(alignment: .leading) {
             HStack {
                 Text("Ibis Transport")
