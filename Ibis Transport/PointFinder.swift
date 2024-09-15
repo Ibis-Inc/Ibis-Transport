@@ -9,8 +9,6 @@ import Foundation
 import CoreLocation
 import Combine
 
-
-
 let apiKey = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJrU3RKYWstZWc2cTJIMHdEWE9UdTlDZERXd1hqYW00RXpiSlVZVG94andnIiwiaWF0IjoxNzIzMDg0MTMyfQ.bT8JlQZxGKmWV5DjoKSBN_it0I9D9l-Gz-Xe6TD_zZk"
 
 class deviceLocationService: NSObject, CLLocationManagerDelegate, ObservableObject {

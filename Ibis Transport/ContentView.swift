@@ -2,14 +2,28 @@ import SwiftUI
 import MapKit
 import CoreLocation
 
+class SharedStationService: ObservableObject {
+    @Published var stations: [stationData] = []
+    let service = stationService()
+    
+    @MainActor func fetchNearbyTrainStations(completion: @escaping ([stationData]?) -> Void) {
+        service.fetchNearbyTrainStations { fetchedStations in
+            if let fetchedStations = fetchedStations {
+                DispatchQueue.main.async {
+                    self.stations = fetchedStations
+                }
+            }
+            completion(fetchedStations)
+        }
+    }
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var context
     let locationManager = CLLocationManager()
     @State var showHomeSheet = true
     
-    // Initialize stationService lazily without passing context in init
-    @StateObject private var trainStupid = stationService()
-    @State private var stations: [stationData] = []
+    @StateObject private var sharedService = SharedStationService()
     @State private var cameraLocation: MKCoordinateRegion = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: -33.866464, longitude: 151.200923),
         span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
@@ -18,36 +32,24 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             Map() {
-                ForEach(stations) { station in
-                    Marker(station.stopName, coordinate: station.stopCoord.toCLLocationCoordinate2D())
+                UserAnnotation()
+                
+                ForEach(sharedService.stations) { station in
+                    Marker(station.stopName ,coordinate: station.stopCoord.toCLLocationCoordinate2D())
                 }
-            }
+        }
             .mapStyle(.standard(elevation: .realistic))
             .mapControls {
                 MapUserLocationButton()
-                Button {
-                    trainStupid.fetchNearbyTrainStations { fetchedStations in
-                        if let fetchedStations = fetchedStations {
-                            self.stations = fetchedStations
-                            stations.forEach { print($0) }
-                        }
-                    }
-                } label: {
-                    Image(systemName: "pencil")
-                }
             }
             .onAppear {
                 locationManager.requestWhenInUseAuthorization()
                 deviceLocationService.shared.requestLocationUpdates()
                 
                 // Set the model context for the stationService object after view appears
-                trainStupid.modelContext = context
-                trainStupid.subscribeToLocationUpdates()
-                trainStupid.fetchNearbyTrainStations { fetchedStations in
-                    if let fetchedStations = fetchedStations {
-                        self.stations = fetchedStations
-                    }
-                }
+                sharedService.service.modelContext = context
+                sharedService.service.subscribeToLocationUpdates()
+                sharedService.fetchNearbyTrainStations { _ in }
                 
                 // Update camera location to user's actual location
                 if let userLocation = locationManager.location?.coordinate {
@@ -71,12 +73,7 @@ struct ContentView: View {
                     .controlSize(.regular)
                     .padding()
                     Button {
-                        trainStupid.fetchNearbyTrainStations { fetchedStations in
-                            if let fetchedStations = fetchedStations {
-                                self.stations = fetchedStations
-                                stations.forEach { print($0) }
-                            }
-                        }
+                        sharedService.fetchNearbyTrainStations { _ in }
                     } label: {
                         Image(systemName: "pencil")
                     }
@@ -90,7 +87,7 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $showHomeSheet) {
-            homeSheetView()
+            homeSheetView(sharedService: sharedService)
                 .presentationDetents([.fraction(0.20), .large])
                 .presentationDragIndicator(.visible)
                 .presentationCornerRadius(50)
@@ -101,16 +98,21 @@ struct ContentView: View {
 }
 
 struct homeSheetView: View {
+    @ObservedObject var sharedService: SharedStationService
+    
     var body: some View {
-        @StateObject var trainStupid = stationService()
-        @State var station: [stationData] = []
         VStack(alignment: .leading) {
             HStack {
                 Text("Ibis Transport")
                     .fontWeight(.bold)
                     .fontWidth(.expanded)
                     .font(.system(size: 30))
-                MapUserLocationButton()
+                
+                Button {
+                    sharedService.fetchNearbyTrainStations { _ in }
+                } label: {
+                    Image(systemName: "pencil")
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
