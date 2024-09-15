@@ -107,12 +107,16 @@ struct homeSheetView: View {
                     .fontWeight(.bold)
                     .fontWidth(.expanded)
                     .font(.system(size: 30))
-                
+                Spacer()
                 Button {
                     sharedService.fetchNearbyTrainStations { _ in }
                 } label: {
-                    Image(systemName: "pencil")
+                    Image(systemName: "tram.fill")
                 }
+                .background(.thinMaterial)
+                .clipShape(.rect(cornerRadii: RectangleCornerRadii(topLeading: 10, bottomLeading: 10, bottomTrailing: 10, topTrailing: 10)))
+                .shadow(radius: 5)
+                .buttonStyle(BorderedButtonStyle())
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
