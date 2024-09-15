@@ -11,9 +11,3 @@ The app is a native iOS app made entirely using Swift and SwiftUI in XCode. [Ala
 
 ## How can you use the app?
 Currently the only way to run it is by cloning it and running it on XCode on either a simulator or putting it on a real device. Unfortunately I'm under 18 so I can't get it on the app store or testflight but when its finished I will release an IPA file if you use AltStore or SideStore on your phone. You'll need iOS 18 (currently in beta) or higher to run it because it was coded using the latest XCode beta.
-
-## When will it be finished?
-I don't exactly have the most free time but I work a bit on it nearly every day if I can. I don't have an exact date but if you want to help, feel free to contribute!
-
-## Images (Of What I Have So Far)
-<img width="359" alt="image" src="https://github.com/user-attachments/assets/f057b216-a0df-4acb-b0e4-7614180e7f7a">
