@@ -10,7 +10,6 @@ import Combine
 import CoreLocation
 import Alamofire
 import SwiftData
-import SwiftUI
 
 @Model
 public final class stationData: Decodable, CustomStringConvertible, Identifiable, Hashable {

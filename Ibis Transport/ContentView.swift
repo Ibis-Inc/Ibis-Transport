@@ -41,6 +41,7 @@ struct ContentView: View {
             .mapStyle(.standard(elevation: .realistic))
             .mapControls {
                 MapUserLocationButton()
+                    .shadow(radius: 5)
             }
             .onAppear {
                 locationManager.requestWhenInUseAuthorization()
@@ -66,21 +67,10 @@ struct ContentView: View {
                     } label: {
                         Image(systemName: "house")
                     }
-                    .frame(alignment: .bottomTrailing)
-                    .buttonStyle(.bordered)
-                    .background(Color.white)
-                    .buttonBorderShape(.roundedRectangle)
-                    .controlSize(.regular)
-                    .padding()
-                    Button {
-                        sharedService.fetchNearbyTrainStations { _ in }
-                    } label: {
-                        Image(systemName: "pencil")
-                    }
-                    .frame(alignment: .bottomTrailing)
-                    .buttonStyle(.bordered)
-                    .background(Color.white)
-                    .buttonBorderShape(.roundedRectangle)
+                    .background(.thinMaterial)
+                    .clipShape(.rect(cornerRadii: RectangleCornerRadii(topLeading: 10, bottomLeading: 10, bottomTrailing: 10, topTrailing: 10)))
+                    .shadow(radius: 5)
+                    .buttonStyle(BorderedButtonStyle())
                     .controlSize(.regular)
                     .padding()
                 }
